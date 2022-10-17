@@ -1,0 +1,28 @@
+---
+title: "IMDb Analysis"
+author: "Thomas A. Mendez"
+date: "October 16, 2022"
+output: html_document
+---
+
+## Import Libraries
+```{r}
+library(tidyverse)
+library(ggrepel)
+library(gghighlight)
+library(ggridges)
+library(tidytext)
+
+sessionInfo()
+```
+
+### Import Data
+```{r}
+read_imdb <- function(data_path) {
+  path <- "data/"
+  read_tsv(paste0(path, data_path), na = "\\N", progress=F)
+}
+
+df_ratings <- read_imdb("title.ratings.tsv")
+df_ratings %>% head()
+```
