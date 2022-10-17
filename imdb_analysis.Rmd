@@ -12,6 +12,7 @@ library(ggrepel)
 library(gghighlight)
 library(ggridges)
 library(tidytext)
+library(scales)
 
 sessionInfo()
 ```
@@ -25,4 +26,14 @@ read_imdb <- function(data_path) {
 
 df_ratings <- read_imdb("title.ratings.tsv")
 df_ratings %>% head()
+```
+
+### Create Plot
+```{r}
+plot <- ggplot(df_ratings, aes(x = numVotes, y = averageRating)) +
+          geom_bin2d() +
+          scale_x_log10(labels = comma) +
+          scale_y_continuous(breaks = 0:10)
+
+ggsave("output/plots/title-ratings.png", plot, width=4, height=3)
 ```
