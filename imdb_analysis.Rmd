@@ -39,23 +39,27 @@ plot <- ggplot(df_ratings, aes(x = numVotes, y = averageRating)) +
           geom_bin2d() +
           scale_x_log10(labels = comma) +
           scale_y_continuous(breaks = 0:10) +
-          scale_fill_viridis_c(option = "inferno")
+          scale_fill_viridis_c(option = "inferno") +
+          labs(title="Number of Votes vs Average Rating",
+               subtitle="Data from IMDb",
+               x="Number of Votes",
+               y="Average User Rating")
 
-ggsave("output/plots/title-ratings.png", plot, width=4, height=3)
+ggsave("output/plots/title-ratings-num-votes-avg-rating.png", plot, width=4, height=3)
 ```
 
-![](output/plots/title-ratings.png)
+![](output/plots/title-ratings-num-votes-avg-rating.png)
  
 # Title Basics
 
 ## Import Data
 ```{r}
-df_basics <- read_tsv('data/title.basics.tsv', na = "\\N", quote = '')
+df_basics <- read_imdb('title.basics.tsv')
 df_basics <- df_ratings %>% left_join(df_basics)
 df_basics %>% head()
 ```
 
-## Create Plot
+## Create Plot - Movie Runtime vs Average Movie Rating
 ```{r}
 plot <- ggplot(df_basics %>% filter(runtimeMinutes < 180, runtimeMinutes > 20), aes(x = runtimeMinutes, y = averageRating)) +
           geom_bin2d() +
@@ -68,18 +72,35 @@ plot <- ggplot(df_basics %>% filter(runtimeMinutes < 180, runtimeMinutes > 20), 
                x="Runtime (Hours)",
                y="Average User Rating")
 
-ggsave("output/plots/title-basics.png", plot, width=4, height=3)
+ggsave("output/plots/title-basics-runtime-avg-user-rating.png", plot, width=4, height=3)
 ```
 
-![](output/plots/title-basics.png)
+![](output/plots/title-basics-runtime-avg-user-rating.png)
 
-# Genre
-
-## Unnest Genre from Genres
+## Create Plot - Movie Release Year vs Average Rating
 ```{r}
-df_basics_unnest_genre <- df_basics %>%
-                      select(runtimeMinutes, averageRating, genres) %>%
-                      unnest_tokens(genre, genres)
+plot <- ggplot(df_basics %>% filter(titleType == "movie", numVotes >= 10), aes(x = startYear, y = averageRating)) +
+          geom_bin2d() +
+          geom_smooth(color="black") +
+          scale_x_continuous() +
+          scale_y_continuous(breaks = 1:10) +
+          scale_fill_viridis_c(option = "plasma", labels = comma, trans = 'log10') +
+          labs(title="Movie Release Year vs Average Rating",
+               subtitle="Data from IMDb",
+               x="Year Movie was Released",
+               y="Average User Rating")
 
-df_basics_unnest_genre %>% head(10)
+ggsave("output/plots/title-basics-movie-release-year-avg-rating.png", plot, width=4, height=3)
+```
+
+![](output/plots/title-basics-movie-release-year-avg-rating.png)
+
+# Name Basics
+
+## Import Data
+```{r}
+df_actors <- read_imdb('name.basics.tsv') %>%
+              filter(str_detect(primaryProfession, "actor|actress"))  %>%
+              select(nconst, primaryName, birthYear)
+df_actors %>% head()
 ```
