@@ -5,7 +5,7 @@ date: "October 16, 2022"
 output: html_document
 ---
 
-## Import Libraries
+# Import Libraries
 ```{r}
 library(tidyverse)
 library(ggrepel)
@@ -17,23 +17,69 @@ library(scales)
 sessionInfo()
 ```
 
-### Import Data
+# Read IMDb Data Helper Function
 ```{r}
 read_imdb <- function(data_path) {
   path <- "data/"
-  read_tsv(paste0(path, data_path), na = "\\N", progress=F)
+  read_tsv(paste0(path, data_path), na = "\\N", quote = '', progress=T)
 }
+```
 
+# Title Ratings
+
+## Import Data
+```{r}
 df_ratings <- read_imdb("title.ratings.tsv")
 df_ratings %>% head()
 ```
 
-### Create Plot
+## Create Plot
 ```{r}
 plot <- ggplot(df_ratings, aes(x = numVotes, y = averageRating)) +
           geom_bin2d() +
           scale_x_log10(labels = comma) +
-          scale_y_continuous(breaks = 0:10)
+          scale_y_continuous(breaks = 0:10) +
+          scale_fill_viridis_c(option = "inferno")
 
 ggsave("output/plots/title-ratings.png", plot, width=4, height=3)
+```
+
+![](output/plots/title-ratings.png)
+ 
+# Title Basics
+
+## Import Data
+```{r}
+df_basics <- read_tsv('data/title.basics.tsv', na = "\\N", quote = '')
+df_basics <- df_ratings %>% left_join(df_basics)
+df_basics %>% head()
+```
+
+## Create Plot
+```{r}
+plot <- ggplot(df_basics %>% filter(runtimeMinutes < 180, runtimeMinutes > 20), aes(x = runtimeMinutes, y = averageRating)) +
+          geom_bin2d() +
+          scale_x_continuous(breaks = seq(0, 180, 60), labels = 0:3) +
+          scale_y_continuous(breaks = 0:10) +
+          scale_fill_viridis_c(option = "inferno") +
+          theme_minimal(base_family = "Source Sans Pro") +
+          labs(title="Movie Runtime vs Average Movie Rating",
+               subtitle="Data from IMDb",
+               x="Runtime (Hours)",
+               y="Average User Rating")
+
+ggsave("output/plots/title-basics.png", plot, width=4, height=3)
+```
+
+![](output/plots/title-basics.png)
+
+# Genre
+
+## Unnest Genre from Genres
+```{r}
+df_basics_unnest_genre <- df_basics %>%
+                      select(runtimeMinutes, averageRating, genres) %>%
+                      unnest_tokens(genre, genres)
+
+df_basics_unnest_genre %>% head(10)
 ```
